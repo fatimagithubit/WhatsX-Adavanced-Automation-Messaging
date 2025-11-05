@@ -77,12 +77,17 @@ TEMPLATES = [
 # --- Database ---
 import dj_database_url
 
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL", "postgresql://postgres:1234@localhost:5432/whatsx_db"),
+        default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
     )
 }
+
+# Optional: Add a check to fail explicitly if the DB URL is missing
+if not DATABASES['default']:
+    print("WARNING: DATABASE_URL environment variable is not set. This will fail on Render.")
 # --- REST Framework ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
