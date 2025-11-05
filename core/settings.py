@@ -79,12 +79,10 @@ import dj_database_url
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
+        default=os.getenv("DATABASE_URL", "postgresql://postgres:1234@localhost:5432/whatsx_db"),
         conn_max_age=600,
-        ssl_require=True
     )
 }
-
 # --- REST Framework ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
