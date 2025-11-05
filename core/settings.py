@@ -20,7 +20,7 @@ load_dotenv(dotenv_path=dotenv_path)
 # --- Security Settings ---
 SECRET_KEY = os.getenv("SECRET_KEY", 'django-insecure-5y#pxafeg_xf3s*zw*=rfem+faxala-3x$thv!l714e$u2js@@')
 DEBUG = os.getenv("DEBUG", "True") == "True"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS =['*']
 # --- Custom User Model ---
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
