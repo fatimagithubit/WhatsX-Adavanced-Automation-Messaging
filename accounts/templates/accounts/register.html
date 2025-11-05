@@ -2,6 +2,7 @@
 {% block title %}Register | WhatsX{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
 <style>
   .wa-card {
     border-radius: 18px;
@@ -23,7 +24,9 @@
   .wa-btn:hover { background: #128c7e; }
   .wa-link { color: #128c7e; }
   .wa-link:hover { text-decoration: underline; }
+  .errorlist { color: red; font-size: 0.9rem; margin-bottom: 0.5rem; }
 </style>
+
 <div class="row justify-content-center">
   <div class="col-md-6 col-lg-5">
     <div class="wa-card">
@@ -31,26 +34,43 @@
         <i class="bi bi-person-plus" style="font-size:2.5rem;color:#25d366;"></i>
         <h3 class="mt-2 mb-0" style="color:#128c7e;">Create Account</h3>
       </div>
-      <form method="post">
+
+      <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        
         <div class="form-floating mb-3">
           <input type="text" name="username" class="form-control" placeholder="Username" required>
           <label>Username</label>
+          {{ form.username.errors }}
         </div>
+
         <div class="form-floating mb-3">
           <input type="email" name="email" class="form-control" placeholder="Email" required>
           <label>Email</label>
+          {{ form.email.errors }}
         </div>
+
         <div class="form-floating mb-3">
-          <input type="password" name="password" class="form-control" placeholder="Password" required>
+          <input type="password" name="password1" class="form-control" placeholder="Password" required>
           <label>Password</label>
+          {{ form.password1.errors }}
         </div>
+
+        <div class="form-floating mb-3">
+          <input type="password" name="password2" class="form-control" placeholder="Confirm Password" required>
+          <label>Confirm Password</label>
+          {{ form.password2.errors }}
+        </div>
+
         <div class="mb-3">
           <label>Profile Image (optional):</label>
-          <input type="file" name="profile_image" class="form-control">
+          <input type="file" name="image" class="form-control">
+          {{ form.image.errors }}
         </div>
+
         <button type="submit" class="wa-btn w-100">Register</button>
       </form>
+
       <div class="mt-4 text-center">
         <a href="{% url 'accounts:login_view' %}" class="wa-link">Already have an account? Login</a>
       </div>
