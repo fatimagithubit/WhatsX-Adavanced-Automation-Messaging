@@ -12,14 +12,17 @@ def normalize_phone(phone: str) -> str:
 
 
 class CustomUserCreationForm(UserCreationForm):
-    class Meta:
+    class Meta(UserCreationForm.Meta):
         model = CustomUser
-        fields = ['username', 'email', 'password1', 'password2', 'user_type', 'image']
+        fields = ('username', 'email', 'image')  # no user_type here
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['email'].required = True
-        self.fields['user_type'].required = True
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        # system assigns user_type automatically
+        user.user_type = 'end_user'
+        if commit:
+            user.save()
+        return user
 
 
 class ContactForm(forms.ModelForm):
