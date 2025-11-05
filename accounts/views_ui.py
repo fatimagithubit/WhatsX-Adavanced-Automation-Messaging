@@ -46,20 +46,12 @@ User = get_user_model()
 
 # --- Authentication Views ---
 def register_view(request):
-    """Handles user registration."""
-    if request.user.is_authenticated:
-        return redirect('accounts:user_dashboard')
-
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Account created successfully! Welcome.')
-            return redirect('accounts:user_dashboard')
-        else:
-            for field, errors in form.errors.items():
-                messages.error(request, f"{field.capitalize()}: {list(errors)[0]}")
+            form.save()
+            messages.success(request, 'Account created successfully. You can now log in.')
+            return redirect('accounts:login_view')
     else:
         form = CustomUserCreationForm()
     return render(request, 'accounts/register.html', {'form': form})
