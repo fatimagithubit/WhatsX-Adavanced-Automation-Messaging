@@ -1,0 +1,136 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}Connect WhatsApp{% endblock %}
+
+
+
+{% block content %}
+<div class="page-wrapper">
+    <h1 class="text-3xl  mb-2  fw-bold text-center">WhatsApp Connection</h1>
+    <p class="mb-4 text-center ">Connect your WhatsApp account to enable bulk messaging campaigns.</p>
+
+    <div id="connection-status" class="qr-container">
+        <p class="status-text status-initializing">Checking WhatsApp connection...</p>
+    </div>
+
+    <div class="btn-group">
+        <button id="start-btn" class="btn btn-green" type="button">Start / Generate QR</button>
+        <button id="disconnect-btn" class="btn btn-red" type="button">Disconnect</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusContainer = document.getElementById('connection-status');
+    const startBtn = document.getElementById('start-btn');
+    const disconnectBtn = document.getElementById('disconnect-btn');
+
+    const startUrl = "{% url 'messaging:whatsapp_start_api' %}";
+    const statusUrl = "{% url 'messaging:whatsapp_status_api' %}";
+    const disconnectUrl = "{% url 'messaging:whatsapp_disconnect_api' %}";
+
+    let statusInterval;
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    function updateUI(state) {
+        let statusHtml = '';
+        startBtn.style.display = 'none';
+        disconnectBtn.style.display = 'none';
+        startBtn.disabled = false;
+        disconnectBtn.disabled = false;
+
+        switch (state.status) {
+            case 'CONNECTED':
+                statusHtml = `<p class="status-text status-connected">Connected as <strong>${state.connection_info?.name || 'Unknown'}</strong></p>`;
+                disconnectBtn.style.display = 'inline-block';
+                if (statusInterval) clearInterval(statusInterval);
+                break;
+            case 'QR_READY':
+                statusHtml = `<p class="status-text status-qr-ready">Scan the QR Code to Connect</p>`;
+                if (state.qr)
+                    statusHtml += `<img src="data:image/png;base64,${state.qr}" alt="Scan QR Code" class="qr-image">`;
+                disconnectBtn.style.display = 'inline-block';
+                break;
+            case 'DISCONNECTED':
+                statusHtml = `<p class="status-text status-disconnected">Session is disconnected.</p>`;
+                startBtn.style.display = 'inline-block';
+                if (statusInterval) clearInterval(statusInterval);
+                break;
+            case 'ERROR':
+                statusHtml = `<p class="status-text status-error">${state.message || 'An unknown error occurred.'}</p>`;
+                startBtn.style.display = 'inline-block';
+                if (statusInterval) clearInterval(statusInterval);
+                break;
+            default:
+                statusHtml = `<p class="status-text status-initializing">${state.message || 'Initializing...'}</p>`;
+                startBtn.style.display = 'inline-block';
+                startBtn.disabled = true;
+                break;
+        }
+        statusContainer.innerHTML = statusHtml;
+    }
+
+    async function checkStatus() {
+        try {
+            const response = await fetch(statusUrl);
+            const data = await response.json();
+            updateUI(data);
+        } catch (error) {
+            updateUI({ status: 'ERROR', message: 'Error: Could not contact the server.' });
+        }
+    }
+
+    async function startSession() {
+        startBtn.disabled = true;
+        updateUI({ status: 'STARTING', message: 'Initializing session, please wait...' });
+        try {
+            await fetch(startUrl, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
+            });
+            if (statusInterval) clearInterval(statusInterval);
+            setTimeout(checkStatus, 2000);
+            statusInterval = setInterval(checkStatus, 5000);
+        } catch (error) {
+            updateUI({ status: 'ERROR', message: 'Failed to start the session.' });
+        }
+    }
+
+    async function disconnectSession() {
+        disconnectBtn.disabled = true;
+        updateUI({ status: 'STARTING', message: 'Disconnecting...' });
+        if (statusInterval) clearInterval(statusInterval);
+        try {
+            await fetch(disconnectUrl, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
+            });
+            updateUI({ status: 'DISCONNECTED', message: 'Successfully disconnected.' });
+        } catch (error) {
+            updateUI({ status: 'ERROR', message: 'Failed to disconnect.' });
+        }
+    }
+
+    startBtn.addEventListener('click', startSession);
+    disconnectBtn.addEventListener('click', disconnectSession);
+
+    checkStatus();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Template Previews{% endblock %}
+
+{% block extra_css %}
+<!-- Link to the dedicated template preview styles -->
+<link rel="stylesheet" href="{% static 'css/template_previews.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Apply padding and general styles using a container class defined in the new CSS -->
+<div class="template-page-container">
+    <h2 class="page-title-preview">Template Previews</h2>
+    
+    <div class="row">
+        {% for template in templates %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    {% if template.image %}
+                    <img src="{{ template.image.url }}" class="img-fluid rounded" alt="{{ template.title }} Attachment Preview">
+                    {% endif %}
+                    
+                    <h5>{{ template.title }}</h5>
+                    
+                    <!-- The |safe filter ensures that newline characters are correctly displayed -->
+                    <p>{{ template.content|safe }}</p> 
+                    
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <p>No templates found.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

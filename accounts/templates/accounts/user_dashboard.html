@@ -1,0 +1,188 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}User Dashboard | WhatsX{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'accounts/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 dashboard-container">
+  <div class="dashboard-header">
+    <div>
+      <h2 class="dashboard-title">
+        <i class="bi bi-bar-chart me-2"></i>User Dashboard
+      </h2>
+    </div>
+    <a href="{% url 'accounts:edit_profile' %}" class="user-profile-link" onmouseover="this.style.boxShadow='0 2px 12px rgba(37,211,102,0.13)';" onmouseout="this.style.boxShadow='none';">
+      <img src="https://ui-avatars.com/api/?name={{ user.username|urlencode }}&background=25D366&color=fff&size=64" alt="avatar" class="user-avatar">
+      <div class="user-info">
+        <div class="user-name">{{ user.username }}</div>
+        <div class="user-email">{{ user.email }}</div>
+        <div class="edit-profile-text">Edit Profile</div>
+      </div>
+    </a>
+    <div class="header-gradient"></div>
+  </div>
+
+  <form method="get" class="mb-1 filter-form" id="filterForm">
+    <label for="days" class="me-2 fw-bold">Show stats for:</label>
+    <select name="days" id="days" class="form-select d-inline-block w-auto" onchange="document.getElementById('filterForm').submit();">
+      <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+      <option value="15" {% if days == 15 %}selected{% endif %}>Last 15 days</option>
+      <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+    </select>
+  </form>
+
+  <div class="stats-container">
+    <div class="row g-4 mb-4">
+      <div class="col-md-3">
+        <div class="card card-green "style="background-Color :#25D366">
+          <div class="card-body text-center">
+            <i class="bi bi-person-lines-fill fs-2 card-icon"></i>
+            <h5 class="card-title mt-2"style="Color : #FFFFFF">Total Contacts</h5>
+            <p class="display-6 fw-bold"style="Color : #FFFFFF ; font-size: 30px">{{ total_contacts }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card card-orange"style="background-color: #FF9800;" >
+          <div class="card-body text-center">
+            <i class="bi bi-send-check fs-2 card-icon"></i>
+            <h5 class="card-title mt-2"style="Color : #FFFFFF">Sent Messages</h5>
+            <p class="display-6 fw-bold"style="Color : #FFFFFF; font-size: 30px">{{ sent_messages }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card card-green" style="background-color: #25D366;" >
+          <div class="card-body text-center">
+            <i class="bi bi-clock-history fs-2 card-icon"></i>
+            <h5 class="card-title mt-2"style="Color : #FFFFFF">Scheduled</h5>
+            <p class="display-6 fw-bold"style="Color : #FFFFFF ; font-size: 30px">{{ scheduled_messages }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div id="wa-status-card" class="card card-orange"style="background-color: #FF9800;">
+          <div class="card-body text-center">
+            <i class="bi bi-qr-code fs-2 card-icon"></i>
+            <h5 class="card-title mt-2"style="Color : #FFFFFF">WhatsApp Connection</h5>
+            <div id="wa-status-spinner" class="spinner-border text-light" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="display-6 fw-bold" id="wa-status-text" style="display: none; Color : #FFFFFF; font-size: 20px">Checking...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-4">
+      <div class="col-md-6">
+        <div class="card chart-card">
+          <div class="card-header chart-header-green">
+            <i class="bi bi-bar-chart me-2"></i>Messages by Status
+          </div>
+          <div class="card-body">
+            <canvas id="messageChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card chart-card">
+          <div class="card-header chart-header-orange">
+            <i class="bi bi-pie-chart me-2"></i>WhatsApp Connection Status
+          </div>
+          <div class="card-body">
+            <canvas id="waStatusChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  new Chart(document.getElementById('messageChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Sent', 'Scheduled'],
+      datasets: [{
+        label: 'Messages',
+        data: [{{ sent_messages|default:0|safe }}, {{ scheduled_messages|default:0|safe }}],
+        backgroundColor: ['#25D366', '#ff9800']
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true, ticks: { color: '#222' } },
+        x: { ticks: { color: '#222' } }
+      },
+      plugins: {
+        legend: { labels: { color: '#222' } }
+      }
+    }
+  });
+
+  // WhatsApp Connection Status - Live from Django API
+  function updateWAStatus() {
+    const statusCard = document.getElementById('wa-status-card');
+    const statusText = document.getElementById('wa-status-text');
+    const statusSpinner = document.getElementById('wa-status-spinner');
+
+    statusSpinner.style.display = 'block';
+    statusText.style.display = 'none';
+
+    fetch("{% url 'messaging:whatsapp_status_api' %}")
+      .then(res => res.json())
+      .then(data => {
+        let connected = (data.status === 'CONNECTED');
+        statusText.textContent = connected ? 'Connected' : 'Not Connected';
+        statusCard.classList.remove('card-orange', 'card-green', 'card-red');
+        statusCard.classList.add(connected ? 'card-green' : 'card-red');
+        
+        waStatusChart.data.datasets[0].data = connected ? [1, 0] : [0, 1];
+        waStatusChart.update();
+      })
+      .catch(() => {
+        statusText.textContent = 'Service Unavailable';
+        statusCard.classList.remove('card-orange', 'card-green');
+        statusCard.classList.add('card-red');
+        
+        waStatusChart.data.datasets[0].data = [0, 1];
+        waStatusChart.update();
+      })
+      .finally(() => {
+        statusSpinner.style.display = 'none';
+        statusText.style.display = 'block';
+      });
+  }
+
+  const waStatusChart = new Chart(document.getElementById('waStatusChart'), {
+    type: 'pie',
+    data: {
+      labels: ['Connected', 'Not Connected'],
+      datasets: [{
+        data: [0,1],
+        backgroundColor: ['#25D366', '#ff9800']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#222',
+            font: { weight: 'bold' }
+          }
+        }
+      }
+    }
+  });
+
+  updateWAStatus();
+  setInterval(updateWAStatus, 10000); // Refresh every 10 seconds
+</script>
+{% endblock %}

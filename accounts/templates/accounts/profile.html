@@ -1,0 +1,44 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% block title %}Profile | WhatsX{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="wa-profile-card">
+      {% if user.image %}
+        <img src="{{ user.image.url }}" alt="Profile Image" class="wa-profile-img">
+      {% else %}
+        <div class="wa-profile-img d-flex align-items-center justify-content-center placeholder">
+          <i class="bi bi-person-circle"></i>
+        </div>
+      {% endif %}
+
+      <h3 class="wa-profile-heading">
+        <i class="bi bi-person-badge"></i> My Profile
+      </h3>
+
+      <div class="wa-profile-label"><i class="bi bi-person"></i> Username</div>
+      <div class="wa-profile-value">{{ user.username }}</div>
+
+      <div class="wa-profile-label"><i class="bi bi-envelope"></i> Email</div>
+      <div class="wa-profile-value">{{ user.email }}</div>
+
+      <div class="wa-profile-label"><i class="bi bi-person-badge"></i> Role</div>
+      <div class="wa-profile-value">{{ user.user_type|title }}</div>
+
+      <div class="wa-profile-actions">
+        <a href="{% url 'edit_profile' %}" class="btn btn-success">
+          <i class="bi bi-pencil-square"></i> Edit Profile
+        </a>
+        <a href="{% url 'logout_ui' %}" class="btn btn-danger">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,983 @@
+/* -------------------------------------------------------------------------- */
+/* 1. THEME COLORS & VARIABLES (Based on WhatsApp Green)                    */
+/* -------------------------------------------------------------------------- */
+:root {
+    /* Primary Colors */
+    --color-primary-base: #25D366; /* WhatsApp Green */
+    --color-primary-dark: #075E54; /* Darker Green for Active/Hover */ 
+    --color-warning: #FF9800; /* Orange color for warnings/secondary actions */
+
+    /* UI & Typography */
+    --color-background: #f4f7f6; /* Light gray background */
+    --color-surface: #FFFFFF; /* Card/Content background */
+    --color-text-dark: #343A40;
+    --color-text-light: white;
+    --color-border: #E0E0E0;
+    
+    /* Footer */
+    --color-footer-bg: #EAECEF; /* New light background for footer */
+    --color-footer-text: #6C757D; /* Darker grey text */
+
+    /* Dimensions */
+    --border-radius-sm: 0.25rem;
+    --border-radius: 0.5rem;
+    --border-radius-lg: 1rem;
+    --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+body { 
+    background-color: var(--color-background); 
+    margin: 0; 
+    font-family: 'Inter', sans-serif;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 2. LAYOUT AND SIDEBAR STYLES                                             */
+/* -------------------------------------------------------------------------- */
+
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background-color: var(--color-primary-base);
+    color: var(--color-text-light);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar .logo-container {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .logo-container img {
+    height: 150px; 
+    width: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.sidebar .nav-link {
+    color: var(--color-text-light);
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s;
+    padding: 0.75rem 1rem;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .nav-link.active {
+    background-color: var(--color-primary-dark);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar .bi { 
+    margin-right: 0.75rem; 
+}
+
+.sidebar .mt-auto {
+    padding-bottom: 1rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 3. MAIN CONTENT & FOOTER                                             */
+/* -------------------------------------------------------------------------- */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; 
+    position: relative; 
+}
+
+.content-wrapper {
+    flex-grow: 1;
+    padding: 2.5rem; /* Standardized Main Content Padding */
+    padding-bottom: 4rem; 
+}
+
+.footer {
+    text-align: center;
+    padding: 1rem 2.5rem; /* Adjusted horizontal padding for consistency */
+    background-color: var(--color-footer-bg);
+    font-size: 0.85rem;
+    color: var(--color-footer-text);
+    border-top: 1px solid var(--color-border);
+    width: 100%;
+    position: sticky; 
+    bottom: 0;
+    z-index: 100; 
+    margin-top: auto; 
+}
+
+/* -------------------------------------------------------------------------- */
+/* 4. CUSTOM ALERT MESSAGES (Toast style)                                           */
+/* -------------------------------------------------------------------------- */
+#messages-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2000;
+    max-width: 90%;
+    min-width: 300px;
+}
+
+.custom-alert {
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.75rem; /* Slight increase for better spacing */
+    border-radius: var(--border-radius);
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    box-shadow: var(--shadow-md);
+    font-weight: 500;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 5. UNIFIED PAGE HEADER STYLES - MODIFIED FOR CLEAN LEFT-ALIGNED TITLE    */
+/* -------------------------------------------------------------------------- */
+.page-title-preview,
+.h1.text-gray-800,
+.main-header h1 {
+    /* Layout & Alignment - Changed to left-aligned */
+    text-align: left !important; 
+    margin-top: 0 !important;
+    
+    /* Typography */
+    font-weight: 800 !important;
+    font-size: 2.1rem !important;
+    color: var(--color-primary-dark) !important;
+    letter-spacing: 0.5px !important;
+    
+    /* Spacing & Decoration - Removed heavy border and reduced margin */
+    border-bottom: none !important; /* Removed border */
+    padding-bottom: 0.25rem !important; /* Reduced padding */
+    margin-bottom: 1.5rem !important; /* Reduced margin */
+}
+
+/* -------------------------------------------------------------------------- */
+/* 6. CONTACTS LIST STYLES                                          */
+/* -------------------------------------------------------------------------- */
+
+.wa-card { 
+    background: var(--color-surface); 
+    border-radius: var(--border-radius-lg); 
+    box-shadow: 0 4px 24px rgba(16, 185, 129, 0.08); 
+    color: var(--color-text-dark); 
+    padding: 2rem;
+    margin-bottom: 2rem; /* Standardized margin */
+}
+
+.wa-list-header {
+    font-weight: 700; 
+    color: var(--color-primary-base); 
+    font-size: 2rem; 
+    margin: 0;
+}
+
+.wa-search { 
+    border-radius: var(--border-radius); 
+    border: 1px solid var(--color-border); 
+    padding: 0.5em 1em; 
+    margin-right: 1em; 
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.wa-add-btn { 
+    background: var(--color-primary-base); 
+    color: var(--color-text-light); 
+    border: none; 
+    border-radius: var(--border-radius); 
+    font-weight: 600; 
+    padding: 0.5em 1.2em; 
+    transition: background 0.2s; 
+}
+
+.wa-add-btn:hover { 
+    background: var(--color-primary-dark); 
+}
+
+/* Table Styles */
+.wa-table {
+    border-collapse: separate;
+    border-spacing: 0 0.75rem; /* Increased spacing between rows */
+}
+
+.wa-table thead th {
+    background: var(--color-primary-base); 
+    color: var(--color-text-light); 
+    border-bottom: none !important;
+    padding: 1rem 1rem;
+}
+
+.wa-table tbody tr { 
+    background: var(--color-surface); 
+    color: var(--color-text-dark); 
+    border-radius: var(--border-radius); 
+    transition: background 0.2s, transform 0.2s; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.wa-table tbody tr:hover { 
+    background: #f6fff9; 
+    transform: translateY(-1px);
+}
+
+.wa-table td, .wa-table th { 
+    vertical-align: middle; 
+    border: none;
+    padding: 0.75rem 1rem; /* Consistent padding in cells */
+}
+
+.contact-image {
+    width: 36px; 
+    height: 36px; 
+    border-radius: 50%; 
+    object-fit: cover;
+    border: 2px solid var(--color-border);
+}
+
+.wa-action-btn { 
+    border: none; 
+    background: transparent; 
+    color: var(--color-primary-base); 
+    font-size: 1.2em; 
+    margin-right: 0.75em; /* Increased spacing */
+    transition: color 0.2s; 
+    padding: 0.25rem;
+}
+
+.wa-action-btn:hover { 
+    color: var(--color-warning); 
+}
+
+/* Pagination Styles */
+.wa-pagination .page-link { 
+    background: var(--color-primary-base); 
+    color: var(--color-text-light); 
+    border: none; 
+    border-radius: var(--border-radius); 
+    margin: 0 4px; 
+    transition: background 0.2s;
+}
+
+.wa-pagination .page-link:hover {
+    background: var(--color-primary-dark);
+    color: var(--color-text-light);
+}
+
+.wa-pagination .page-item.active .page-link { 
+    background: var(--color-warning); 
+    color: var(--color-text-light); 
+    border: none; 
+}
+.dashboard-container {
+  background: #fff;
+  padding-bottom: 2rem;
+}
+.dashboard-header {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(16, 185, 129, 0.1);
+  padding: 1.5rem 2rem 1.2rem 2rem;
+  margin-bottom: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+.dashboard-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 2.1rem;
+  color: #25d366;
+  margin: 0;
+  letter-spacing: 1.5px;
+}
+.user-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  border-radius: 12px;
+  padding: 4px 8px;
+}
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.1);
+}
+.user-info {
+  text-align: right;
+}
+.user-name {
+  font-weight: 600;
+  color: #222;
+}
+.user-email {
+  font-size: 0.95em;
+  color: #888;
+}
+.edit-profile-text {
+  font-size: 0.85em;
+  color: #25d366;
+  font-weight: 500;
+}
+.header-gradient {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 18px;
+  background: linear-gradient( 180deg, rgba(255, 255, 255, 0), rgba(37, 211, 102, 0.07) );
+  border-radius: 0 0 18px 18px;
+}
+.filter-form {
+  margin-bottom: 0.5rem !important;
+}
+.stats-container {
+  min-height: 40vh;
+  padding: 0.5rem 0 0.2rem 0;
+  margin-bottom: 0;
+}
+.card-green {
+  background: #25d366;
+  color: #fff;
+  border: none;
+}
+.card-orange {
+  background: #ff9800;
+  color: #fff;
+  border: none;
+}
+.card-icon {
+  color: #fff;
+}
+.chart-card {
+  background: #fff;
+  border-radius: 18px;
+}
+.chart-header-green {
+  background: transparent;
+  color: #25d366;
+  border: none;
+  font-weight: 600;
+}
+.chart-header-orange {
+  background: transparent;
+  color: #ff9800;
+  border: none;
+  font-weight: 600;
+}
+#waStatusChart {
+  max-width: 300px;
+  max-height: 300px;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* 8. TEMPLATE PREVIEWS PAGE STYLES                                    */
+/* -------------------------------------------------------------------------- */
+
+.template-page-container {
+    padding: 2.5rem; /* Consistent padding */
+    background: var(--color-background);
+}
+
+.card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    transition: transform 0.2s ease-in-out;
+    margin-bottom: 1.5rem; /* Added margin for grid spacing */
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.card-body h5 {
+    color: var(--color-warning);
+    font-weight: 700;
+    margin-bottom: 0.75rem; /* Standardized spacing */
+    font-size: 1.25em;
+}
+
+.card-body p {
+    white-space: pre-wrap;
+    font-size: 0.95em;
+    color: var(--color-text-dark);
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.img-fluid {
+    height: auto;
+    max-width: 100%;
+    margin-bottom: 1rem; /* Standardized spacing */
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+}
+
+.card-body p::-webkit-scrollbar {
+    width: 6px;
+}
+
+.card-body p::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.card-body p::-webkit-scrollbar-track {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 9. CAMPAIGN CREATION FORM STYLES                                    */
+/* -------------------------------------------------------------------------- */
+
+.container-fluid {
+    /* Enforcing padding for full-width content pages */
+    padding: 2.5rem !important; 
+}
+
+.form-section { 
+    background-color: #fff; 
+    padding: 2.5rem; /* Standardized internal padding */
+    border-radius: var(--border-radius-lg); 
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08); 
+    margin-bottom: 2.5rem; /* Consistent spacing between sections */
+    border-left: 5px solid var(--color-warning); 
+}
+
+.form-section h4 {
+    color: var(--color-primary-base);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+}
+
+.form-label { 
+    font-weight: 600; 
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: var(--border-radius);
+    border-color: #ced4da;
+    padding: 0.75rem 1rem;
+}
+
+/* Custom Tab/Button Group Styling */
+.tab-button-group {
+    display: flex; 
+    width: 100%;
+    /* Ensure no margin/gap issues */
+    gap: 0; 
+}
+
+.tab-button-group .btn-outline-primary {
+    flex-grow: 1;
+    border: 1px solid #ffc279;
+    color: #ff8c00;
+    background-color: #ffffff;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border-radius: 0.5rem;
+    /* Reset left border for adjacent buttons to avoid double thickness */
+    border-left-width: 0;
+}
+
+.tab-button-group .btn-outline-primary:first-child {
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+    border-left-width: 1px; /* Restore left border for the first child */
+}
+
+.tab-button-group .btn-outline-primary:last-child {
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+}
+
+.tab-button-group .btn-outline-primary:not(.active):hover {
+    background-color: #fff5e8;
+    border-color: #ff8c00;
+    color: #cc7000;
+}
+
+.tab-button-group .btn-check:checked + .btn-outline-primary {
+    background-color: #ff8c00;
+    border-color: #ff8c00;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(255, 140, 0, 0.3);
+    z-index: 2; /* Ensures active state overlaps borders cleanly */
+}
+
+.tab-button-group .btn-check:checked + .btn-outline-primary:hover {
+    background-color: #cc7000;
+    border-color: #cc7000;
+}
+
+.tab-button-group.schedule-group .btn-outline-primary:first-child {
+    border-left-width: 1px;
+}
+
+/* Quill Editor Styles */
+.quill-editor-container {
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    overflow: hidden; 
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ql-toolbar {
+    background: #fdf5ec;
+    border-bottom: 1px solid #ff8c00;
+    padding: 10px 15px;
+}
+
+#message-editor { 
+    flex-grow: 1;
+    font-size: 1rem;
+    background-color: #ffffff;
+}
+
+#message-editor .ql-editor {
+    min-height: 250px;
+}
+
+/* Recipient Source Dynamic Divs */
+.recipient-source-option { 
+    display: none; 
+    padding: 1rem 0 0;
+}
+
+.recipient-source-option.active { 
+    display: block; 
+}
+
+/* Launch Button */
+.btn-success {
+    background-color: #28a745;
+    border-color: #218838;
+    font-weight: 700;
+    padding: 0.8rem 2rem;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    transition: all 0.3s;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    transform: translateY(-2px);
+}
+
+/* Scheduling Input Hide/Show */
+#scheduled-at-group {
+    display: none;
+    margin-top: 1.5rem; /* Standardized spacing */
+}
+
+#scheduled-at-group.active {
+    display: block;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 10. CAMPAIGN HISTORY & LOGS CUSTOM STYLES                                    */
+/* -------------------------------------------------------------------------- */
+
+.create-campaign-btn {
+    background-color: #198754;
+    border-color: #198754;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+    transition: all 0.3s ease;
+}
+
+.create-campaign-btn:hover {
+    background-color: #157347;
+    border-color: #157347;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(25, 135, 84, 0.4);
+}
+
+/* Campaign Card Styles */
+.campaign-card {
+    background-color: #fff;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+    margin-bottom: 2rem; /* Consistent spacing between campaign cards */
+    border-left: 5px solid var(--color-warning);
+    transition: all 0.3s ease;
+}
+
+.campaign-card:hover {
+    box-shadow: 0 6px 28px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.campaign-card h5.card-title {
+    font-weight: 700;
+    color: #343a40;
+}
+
+.label-text {
+    font-weight: 600;
+    color: #495057;
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+/* Status Badges */
+.status-badge {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.4em 0.8em;
+    border-radius: 2rem;
+    display: inline-block;
+    min-width: 90px;
+    text-align: center;
+}
+
+/* Status Color Mapping */
+.status-PENDING { 
+    background-color: #ff8c00;
+    color: #fff; 
+}
+.status-IN_PROGRESS { 
+    background-color: #0d6efd;
+    color: #fff; 
+}
+.status-COMPLETED { 
+    background-color: #198754;
+    color: #fff; 
+}
+.status-FAILED { 
+    background-color: #dc3545;
+    color: #fff; 
+}
+
+/* Details Button */
+.details-btn {
+    border: 1px solid #198754;
+    color: #198754;
+    font-weight: 600;
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.details-btn:hover {
+    background-color: #198754;
+    color: #fff;
+}
+
+/* Detailed Log Section */
+.details-log {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    border-bottom-left-radius: var(--border-radius-lg);
+    border-bottom-right-radius: var(--border-radius-lg);
+    padding: 1.5rem; /* Consistent internal log padding */
+}
+
+.details-log h6 {
+    font-weight: 600;
+    color: #198754;
+    margin-bottom: 1rem;
+}
+
+.details-log table {
+    margin-bottom: 0;
+}
+
+.details-log thead th {
+    font-weight: 700;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.details-log tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.details-log td {
+    vertical-align: middle;
+}
+
+/* Empty State Styling */
+.empty-state-box {
+    background-color: #fefefe;
+    border-radius: var(--border-radius-lg);
+    border: 1px dashed #ced4da;
+    margin-top: 2.5rem; /* Consistent spacing after main content */
+    padding: 3rem 2rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 11. QR CODE PAGE STYLES (Cleaned up from user input)                      */
+/* -------------------------------------------------------------------------- */
+h1.page-title {
+    text-align: center;
+    font-weight: 800;
+    font-size: 2rem;
+    color: var(--color-primary-dark);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+}
+.subtitle {
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+.qr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 350px;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+.qr-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+.qr-image {
+    padding: 1rem;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    margin-top: 1.5rem;
+    animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95);}
+    to { opacity: 1; transform: scale(1);}
+}
+.status-text {
+    font-weight: 600;
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    text-align: center;
+}
+.status-connected { color: #10B981; }
+.status-qr-ready { color: #F59E0B; }
+.status-disconnected { color: #EF4444; }
+.status-initializing { color: #3B82F6; }
+.status-error { color: #D91C1C; }
+
+.btn-group {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+.btn {
+    min-width: 160px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0 0.5rem;
+}
+.btn-green {
+    background: var(--color-primary-base);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+}
+.btn-green:hover {
+    background: var(--color-primary-dark);
+}
+.btn-red {
+    background: linear-gradient(90deg, #ef4444 0%, #b91c1c 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+.btn-red:hover {
+    background: linear-gradient(90deg, #dc2626 0%, #991b1b 100%);
+    transform: translateY(-1px);
+}
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.page-wrapper {
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 2rem;
+}
+/* Mobile Responsiveness for Dashboard */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1.5rem !important;
+    }
+
+    .user-header-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+    }
+    
+    .profile-link {
+        margin-top: 1rem;
+        padding: 0;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    .filter-label {
+        margin-bottom: 0.5rem !important;
+    }
+    .filter-select {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+/* === WhatsBotX Login Page Styles === */
+
+.wa-card {
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(16,185,129,0.10);
+  background: #fff;
+  padding: 2.5rem 2rem;
+  margin-top: 48px;
+}
+
+.wa-logo {
+  height: 150px;
+  width: auto;
+}
+
+.wa-title {
+  color: #25d366;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+.wa-title span {
+  color: #ff9800;
+}
+
+.wa-btn {
+  background: #25d366;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 0.75rem 0;
+  transition: background 0.2s ease-in-out;
+}
+
+.wa-btn:hover {
+  background: #128c7e;
+}
+
+.wa-link {
+  color: #128c7e;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.wa-link:hover {
+  text-decoration: underline;
+  color: #ff9800;
+}
+
+.alert {
+  border-radius: 8px;
+  margin-top: 10px;
+}
+/* === WhatsBotX Register Page Styles === */
+
+.wa-card {
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(16,185,129,0.08);
+  background: #fff;
+  padding: 2.5rem 2rem;
+  margin-top: 48px;
+}
+
+.wa-icon {
+  font-size: 2.8rem;
+  color: #25d366;
+}
+
+.wa-title {
+  color: #128c7e;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+.wa-btn {
+  background: #25d366;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 0.75rem 0;
+  transition: background 0.25s ease;
+}
+
+.wa-btn:hover {
+  background: #128c7e;
+}
+
+.wa-link {
+  color: #128c7e;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.wa-link:hover {
+  color: #ff9800;
+  text-decoration: underline;
+}
+
+.form-control {
+  border-radius: 8px;
+  box-shadow: none !important;
+}
+
+label.form-label {
+  font-weight: 500;
+  color: #128c7e;
+}

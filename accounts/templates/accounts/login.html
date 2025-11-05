@@ -1,0 +1,52 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% block title %}Login | WhatsX{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+  /* Your beautiful styling is preserved */
+  .wa-card { border-radius: 18px; box-shadow: 0 4px 24px rgba(16,185,129,0.10); background: #fff; padding: 2.5rem 2rem; margin-top: 48px; }
+  .wa-btn { background: #25d366; color: #fff; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 500; padding: 0.75rem 0; transition: background 0.2s; }
+  .wa-btn:hover { background: #128c7e; }
+  .wa-link { color: #128c7e; }
+  .wa-link:hover { text-decoration: underline; color: #ff9800; }
+</style>
+
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="wa-card">
+      <div class="text-center mb-4">
+        <img src="{% static 'image/WHATSBOTX.png' %}" alt="WhatsBotX Logo" style="height: 150px; width: auto;">
+        <h3 class="mt-2 mb-0" style="color:#25d366; font-family:'Playfair Display',serif; font-weight:700; letter-spacing:2px;">Login to <span style="color:#ff9800;">WhatsBotX</span></h3>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          {# Displaying Django's messages for feedback, e.g., "Invalid username or password." #}
+          <div class="alert alert-danger" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      {# The action attribute points to the correct login URL to be safe #}
+      <form method="post" action="{% url 'accounts:login_view' %}">
+
+        {% csrf_token %}
+        
+        <div class="form-floating mb-3">
+          <input type="text" name="username" class="form-control" placeholder="Username" required>
+          <label>Username</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input type="password" name="password" class="form-control" placeholder="Password" required>
+          <label>Password</label>
+        </div>
+        <button type="submit" class="wa-btn w-100">Login</button>
+      </form>
+      <div class="mt-4 text-center"> 
+        <a href="{% url 'accounts:register_view' %}" class="wa-link">Don't have an account? Register</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

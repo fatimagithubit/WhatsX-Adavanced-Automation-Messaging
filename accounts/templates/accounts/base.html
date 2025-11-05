@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WhatsX{% endblock title %}</title>
+    
+    <!-- FONTS & ICONS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Existing Styles  -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> 
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'image/WHATSBOTX.png' %}">
+
+    {% block extra_css %}{% endblock extra_css %}
+</head>
+<body>
+
+<!-- Alert Messages Container - Fixed Position -->
+<div id="messages-container">
+    {% if messages %}
+        {% for message in messages %}
+            <!-- custom-alert class is used for JS handling and custom styling -->
+            <div class="alert alert-{{ message.tags }} custom-alert" role="alert" data-timeout="3000">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- Main Application Wrapper -->
+<div class="app-wrapper">
+    {% if user.is_authenticated %}
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar d-flex flex-column p-3">
+        <div class="logo-container">
+            <a href="{% url 'accounts:user_dashboard' %}" class="d-block text-center mb-4">
+                <!-- Ensure WHATSBOTX-white.png is in your static/image/ folder -->
+                <img src="{% static 'image/WHATSBOTX-white.png' %}" alt="WhatsX Logo">
+            </a>
+        </div>
+        <ul class="nav flex-column flex-grow-1">
+            <li class="nav-item">
+                <!-- Check if the current view name matches the link's URL -->
+                <a href="{% url 'accounts:user_dashboard' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'user_dashboard' %}active{% endif %}">
+                   <i class="bi bi-bar-chart-line-fill"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <!-- Check if the path contains 'contacts' -->
+                <a href="{% url 'accounts:contacts_list' %}" 
+                   class="nav-link {% if 'contacts' in request.path %}active{% endif %}">
+                   <i class="bi bi-person-lines-fill"></i>Contacts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'messaging:template_list' %}" 
+                   class="nav-link {% if 'template_list' in request.path %}active{% endif %}">
+                   <i class="bi bi-file-earmark-text"></i>Templates
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'messaging:whatsapp_connect' %}" 
+                   class="nav-link {% if 'whatsapp_connect' in request.path %}active{% endif %}">
+                   <i class="bi bi-qr-code"></i>Connect
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'messaging:campaign_create' %}" 
+                   class="nav-link {% if 'campaign_create' in request.path %}active{% endif %}">
+                   <i class="bi bi-send-fill"></i>New Campaign
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'messaging:campaign_list' %}" 
+                   class="nav-link {% if 'campaign_list' in request.path %}active{% endif %}">
+                   <i class="bi bi-clock-history"></i>History
+                </a>
+            </li>
+        </ul>
+        <div class="mt-auto pt-3">
+            <hr class="text-white">
+            <a href="{% url 'accounts:logout_view' %}" class="nav-link"><i class="bi bi-box-arrow-right"></i>Logout ({{ user.username }})</a>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Main Content and Footer -->
+    <div class="main-content">
+        <div class="flex-grow-1">
+            {% block content %}{% endblock content %}
+        </div>
+        <footer class="footer">
+            &copy; {% now "Y" %} WhatsX - Advanced Messaging. All Rights Reserved.
+        </footer>
+    </div>
+</div>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript for Auto-Disappearing Alerts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.custom-alert');
+        alerts.forEach(alert => {
+            const timeout = parseInt(alert.getAttribute('data-timeout') || '3000'); 
+            
+            setTimeout(() => {
+                // Start fade out effect
+                alert.style.opacity = '0'; 
+                alert.style.transform = 'translateX(100%)';
+
+                // Remove from DOM after transition finishes (500ms, matching CSS transition)
+                setTimeout(() => {
+                    alert.remove();
+                }, 500); 
+            }, timeout);
+        });
+    });
+</script>
+
+{% block extra_js %}{% endblock extra_js %}
+</body>
+</html>

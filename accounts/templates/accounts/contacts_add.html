@@ -1,0 +1,58 @@
+{% extends 'accounts/base.html' %}
+{% load widget_tweaks %}
+{% block title %}Add Contact | WhatsX{% endblock %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  .wa-card { background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(16,185,129,0.08); color: #222; padding: 2rem 1.5rem; max-width: 480px; margin: 32px auto; }
+  .wa-form-label { font-weight: 600; color: #25d366; margin-bottom: 0.3em; display: block; }
+  .wa-form-control { border-radius: 8px; border: 1px solid #e0e0e0; padding: 0.7em 1em; margin-bottom: 1.2em; width: 100%; box-sizing: border-box; }
+  .wa-btn-save { background: #25d366; color: #fff; border: none; border-radius: 8px; font-weight: 600; padding: 0.6em 1.5em; margin-right: 1em; transition: background 0.2s; }
+  .wa-btn-save:hover { background: #1ca85c; }
+  .wa-btn-cancel { background: #eee; color: #222; border: none; border-radius: 8px; font-weight: 600; padding: 0.6em 1.5em; }
+  .wa-img-preview { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-bottom: 1em; display: none; }
+  .wa-error { color: #ff9800; font-size: 0.95em; margin-bottom: 0.5em; }
+</style>
+<div class="wa-card">
+  <h2 style="font-family: 'Playfair Display', serif; font-weight:700; color:#25d366; font-size:2rem; margin-bottom:1.5rem;">
+    <i class="bi bi-person-plus me-2"></i>Add Contact
+  </h2>
+  <form method="post" enctype="multipart/form-data" autocomplete="off">
+    {% csrf_token %}
+    <div>
+      <label class="wa-form-label">Name</label>
+      {% if form.name.errors %}<div class="wa-error">{{ form.name.errors.0 }}</div>{% endif %}
+      {{ form.name|add_class:'wa-form-control' }}
+    </div>
+    <div>
+      <label class="wa-form-label">Phone</label>
+      {% if form.phone.errors %}<div class="wa-error">{{ form.phone.errors.0 }}</div>{% endif %}
+      {{ form.phone|add_class:'wa-form-control' }}
+    </div>
+    <div>
+      <label class="wa-form-label">Profile Image</label>
+      {% if form.profile_picture.errors %}<div class="wa-error">{{ form.profile_picture.errors.0 }}</div>{% endif %}
+      {{ form.profile_picture|add_class:'wa-form-control' }}
+      <img id="imgPreview" class="wa-img-preview"/>
+    </div>
+    <div style="margin-top:1.5em;">
+      <button type="submit" class="wa-btn-save"><i class="bi bi-save me-1"></i>Save</button>
+      <a href="{% url 'accounts:contacts_list' %}" class="wa-btn-cancel">Cancel</a>
+    </div>
+  </form>
+</div>
+<script>
+const imgInput = document.querySelector('input[type="file"][name="profile_picture"]');
+if (imgInput) {
+  imgInput.addEventListener('change', function(event) {
+    var img = document.getElementById('imgPreview');
+    if (event.target.files.length > 0) {
+      img.src = URL.createObjectURL(event.target.files[0]);
+      img.style.display = 'block';
+    } else {
+      img.style.display = 'none';
+    }
+  });
+}
+</script>
+{% endblock %} 

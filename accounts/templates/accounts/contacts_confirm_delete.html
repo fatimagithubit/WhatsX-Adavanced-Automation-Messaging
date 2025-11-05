@@ -1,0 +1,22 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Delete Contact | WhatsX{% endblock %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  .wa-card { background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(255,0,0,0.08); color: #222; padding: 2rem 1.5rem; max-width: 400px; margin: 64px auto; text-align: center; }
+  .wa-btn-delete { background: #25d366; color: #fff; border: none; border-radius: 8px; font-weight: 600; padding: 0.6em 1.5em; margin-right: 1em; transition: background 0.2s; }
+  .wa-btn-delete:hover { background: #ff9800; }
+  .wa-btn-cancel { background: #eee; color: #222; border: none; border-radius: 8px; font-weight: 600; padding: 0.6em 1.5em; }
+  .wa-warning { color: #ff9800; font-size: 2.5rem; margin-bottom: 0.5em; }
+</style>
+<div class="wa-card">
+  <div class="wa-warning"><i class="bi bi-exclamation-triangle-fill"></i></div>
+  <h2 style="font-family: 'Playfair Display', serif; font-weight:700; color:#ff9800; font-size:1.5rem; margin-bottom:1.2rem;">Are you sure?</h2>
+  <p>Do you really want to delete <strong>{{ contact.name }}</strong>?</p>
+  <form method="post" style="margin-top:1.5em;">
+    {% csrf_token %}
+    <button type="submit" class="wa-btn-delete"><i class="bi bi-trash me-1"></i>Yes, Delete</button>
+    <a href="{% url 'accounts:contacts_list' %}" class="wa-btn-cancel">Cancel</a>
+  </form>
+</div>
+{% endblock %} 

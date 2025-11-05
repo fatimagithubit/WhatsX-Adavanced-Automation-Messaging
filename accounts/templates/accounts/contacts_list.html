@@ -1,0 +1,97 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Contacts | WhatsX{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'accounts/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+
+<div class="wa-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <h2 class="wa-list-header">
+            <i class="bi bi-person-lines-fill me-2"></i>Contacts
+        </h2>
+        <div class="d-flex align-items-center" style="gap: 1rem;">
+            <form method="get" class="d-flex">
+                <input type="text" name="q" class="form-control wa-search" placeholder="Search contacts..." value="{{ request.GET.q }}">
+                <button type="submit" class="btn btn-outline-success"><i class="bi bi-search"></i></button>
+            </form>
+            <a href="{% url 'accounts:contacts_add' %}" class="btn btn-success wa-add-btn flex-shrink-0">
+                <i class="bi bi-plus-circle me-1"></i>Add Contact
+            </a>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table wa-table align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contact in contacts %}
+                <tr>
+                    <td>{{ contacts.start_index|add:forloop.counter0 }}</td>
+                    <td>{{ contact.name }}</td>
+                    <td>{{ contact.phone }}</td>
+                    <td>
+                        {% if contact.image %}
+                            <img src="{{ contact.image.url }}" alt="{{ contact.name }} image" class="contact-image">
+                        {% else %}
+                            <i class="bi bi-person-circle text-muted" style="font-size:1.5rem;"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'accounts:contacts_edit' contact.pk %}" class="wa-action-btn" title="Edit">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <!-- Delete button should ideally open a confirmation modal, but for now, linking directly -->
+                        <a href="{% url 'accounts:contacts_delete' contact.pk %}" class="wa-action-btn text-danger" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-4">No contacts found. Please add a new contact.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if contacts.has_other_pages %}
+    <nav>
+        <ul class="pagination wa-pagination justify-content-center mt-4">
+            {% if contacts.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ contacts.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">«</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">«</span></li>
+            {% endif %}
+            
+            {% for page_num in contacts.paginator.page_range %}
+                {% if contacts.number == page_num %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ page_num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if contacts.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ contacts.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">»</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">»</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock content %}

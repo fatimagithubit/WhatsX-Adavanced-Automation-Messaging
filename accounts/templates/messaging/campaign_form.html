@@ -1,0 +1,607 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}Create New Campaign{% endblock %}
+
+{% block extra_css %}
+<!-- Link to Quill CSS -->
+<link href="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css" rel="stylesheet">
+<!-- Link to Quill Emoji CSS -->
+<link href="https://cdn.jsdelivr.net/npm/quill-emoji@0.2.0/dist/quill-emoji.css" rel="stylesheet">
+<!-- Load Lucide icons (since Quill doesn't provide them natively) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+    /* Custom styling for the integrated AI Drafting Block */
+    .ai-drafting-block {
+        background: #f8f9fc; /* Light background */
+        border: 1px solid #e3e6f0;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin-top: 1rem;
+        /* Initially hidden, will be toggled by JS */
+        display: none; 
+    }
+    .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+        display: none;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* --- Custom Quill Toolbar Styles for Attachments --- */
+
+    /* Style for the custom AI button */
+    .ql-ai:before {
+        content: '🤖 AI Draft';
+        font-size: 14px;
+        font-weight: bold;
+        color: #10b981; /* Tailwind emerald-500 */
+    }
+    .ql-ai {
+        width: auto !important;
+        padding: 3px 8px !important;
+        border: 1px solid #10b981;
+        border-radius: 4px;
+    }
+
+    /* Style for the Attachment buttons (to show Lucide icons) */
+    .ql-image-attach:after, .ql-document-attach:after, .ql-video-attach:after {
+        content: attr(data-icon);
+        font-family: 'Lucide'; /* Placeholder for font-based icons, but we will use JS/HTML structure */
+        display: none; /* Hide default content as we insert Lucide icons via JS */
+    }
+    .ql-image-attach svg, .ql-document-attach svg, .ql-video-attach svg {
+        width: 18px;
+        height: 18px;
+        vertical-align: middle;
+        stroke: #3498db; /* Blue color for attachments */
+        stroke-width: 2.5;
+    }
+
+
+    /* Active class for dynamic content areas */
+    .recipient-source-option, #scheduled-at-group {
+        display: none;
+    }
+    .recipient-source-option.active, #scheduled-at-group.active {
+        display: block;
+    }
+    /* Style for the Contact List Container */
+    .contact-list-container {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #e3e6f0;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+        background-color: #ffffff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Centered Heading with Custom Styling -->
+    <h1 class="h3 mb-4 text-gray-800 fw-bold text-center">Create New Campaign</h1>
+
+    <div id="form-notification" class="alert alert-danger d-none" role="alert"></div>
+
+    <form method="post" enctype="multipart/form-data" id="campaign-form">
+        {% csrf_token %}
+
+        <!-- Hidden input for Quill content (Plain Text) -->
+        <input type="hidden" name="message_content" id="message-content-hidden">
+        <!-- Hidden input for Quill content (HTML/Delta) -->
+        <input type="hidden" name="rich_content" id="rich-content-hidden">
+
+        <!-- START HIDDEN ATTACHMENT INPUTS (Controlled by Toolbar Buttons) -->
+        <input class="d-none" type="file" id="attachments" name="attachments" multiple onchange="handleFileChange(this)">
+        <!-- END HIDDEN ATTACHMENT INPUTS -->
+
+
+        <div class="col-12 p-0 mx-auto"> 
+            
+            <!-- Step 1: Campaign Details (TOP) -->
+            <div class="form-section flex-grow-0">
+                <h4 class="mb-3">1. Campaign Details</h4>
+                <div class="mb-3">
+                    <label for="campaign-name" class="form-label">Campaign Name*</label>
+                    <input type="text" class="form-control" id="campaign-name" name="campaign_name" placeholder="e.g., 'Eid Promotion 2025'" required>
+                </div>
+            </div>
+
+            <!-- Step 2: Message Composition (AI Drafting and Attachments are integrated here) -->
+            <div class="form-section flex-grow-0">
+                <h4 class="mb-3">2. Message Composition & Media</h4>
+                
+                <!-- Step 2A: Template Selection (Optional) -->
+                <div class="mb-3">
+                    <label for="template-selector" class="form-label">Choose Template (Optional)</label>
+                    <select class="form-select" id="template-selector">
+                        <option value="">-- Start with an empty message --</option>
+                        {% for template in templates %}<option value="{{ template.id }}">{{ template.title }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="form-text mt-3 mb-4">Selecting a template will populate the editor below, which you can then edit.</div>
+
+                
+                <!-- Step 2B: Compose Message (Quill Editor) -->
+                <label for="message-editor-container" class="form-label">Compose Message Text</label>
+                <div class="quill-editor-container">
+                    <div id="message-editor"></div>
+                </div>
+                <div class="form-text mt-2">Use the attachment icons (📎, 📄, 🎥) in the toolbar to add media and documents.</div>
+
+                <!-- Attachment Summary Feedback Area -->
+                <div id="file-attachments-summary" class="mt-3 p-3 bg-light rounded" style="display: none;">
+                    <p class="mb-1 font-weight-bold text-success">Attached Files:</p>
+                    <ul id="attached-files-list" class="list-unstyled mb-0 small text-muted"></ul>
+                </div>
+
+                <!-- START INTEGRATED AI DRAFTING BLOCK HTML -->
+                <div id="ai-drafting-block" class="ai-drafting-block">
+                    <h5 class="font-weight-bold mb-3">Draft Message with AI 🤖</h5>
+                    <div id="ai-notification" class="alert alert-warning d-none" role="alert"></div>
+                    
+                    <div class="mb-3">
+                        <label for="ai-prompt-input" class="form-label">Tell the AI what to write (e.g., 'Write a short, engaging SMS for a 20% off summer sale'):</label>
+                        <textarea id="ai-prompt-input" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end align-items-center">
+                        <button type="button" class="btn btn-secondary me-2" onclick="closeAiDrafting()">Cancel</button>
+                        <button type="button" class="btn btn-success" id="ai-generate-btn" onclick="triggerAiGeneration()">
+                            <span id="ai-btn-text">Generate & Insert</span>
+                            <div id="ai-loading-spinner" class="loading-spinner ms-2"></div>
+                        </button>
+                    </div>
+                </div>
+                <!-- END INTEGRATED AI DRAFTING BLOCK HTML -->
+
+            </div>
+
+            <!-- Step 3: Recipients -->
+            <div class="form-section flex-grow-1 mt-5">
+                <h4 class="mb-3">3. Choose Recipient Source*</h4>
+                
+                <!-- Applying the new custom tab styling to the recipient group -->
+                <div class="tab-button-group mb-4" role="group">
+                    <input type="radio" class="btn-check" name="recipient_source" id="source_manual" value="manual" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary" for="source_manual">Manual Entry</label>
+
+                    <input type="radio" class="btn-check" name="recipient_source" id="source_csv" value="csv" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="source_csv">Upload CSV</label>
+
+                    <input type="radio" class="btn-check" name="recipient_source" id="source_contacts" value="contacts" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="source_contacts">From Contacts</label>
+                </div>
+
+                <!-- Dynamic Recipient Input Areas -->
+                <div id="manual_input_div" class="recipient-source-option active">
+                    <label for="manual-numbers" class="form-label">Enter phone numbers (one per line, with country code e.g. +923XX...)*</label>
+                    <textarea class="form-control" name="manual_numbers" rows="5" required></textarea>
+                </div>
+                <div id="csv_input_div" class="recipient-source-option">
+                    <label for="csv-file" class="form-label">Upload a CSV file*</label>
+                    <input class="form-control" type="file" name="csv_file" accept=".csv">
+                    <div class="form-text">File must have a column named 'Phone' or 'Phone Number'.</div>
+                </div>
+                <div id="contacts_input_div" class="recipient-source-option">
+                    <p class="form-label">Select contacts (Must select at least one):</p>
+                    <!-- Contacts Checkbox List styled for scrolling -->
+                    <div class="contact-list-container">
+                        {% for contact in contacts %}
+                            <div class="form-check">
+                                <input class="form-check-input contact-checkbox" type="checkbox" name="contacts" value="{{ contact.id }}" id="contact-{{ contact.id }}">
+                                <label class="form-check-label" for="contact-{{ contact.id }}">{{ contact.name }} ({{ contact.phone }})</label>
+                            </div>
+                        {% empty %}
+                            <p class="text-center text-muted m-0 p-3">You have not added any contacts yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Scheduling (BOTTOM) -->
+            <div class="form-section flex-grow-0 mt-5">
+                <h4 class="mb-3">4. Schedule or Send* </h4>
+                
+                <!-- Applying the new custom tab styling to the scheduling group -->
+                <div class="tab-button-group schedule-group mb-4" role="group">
+                    <input type="radio" class="btn-check" name="send_option" id="send_now" value="now" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary" for="send_now">Send Immediately</label>
+
+                    <input type="radio" class="btn-check" name="send_option" id="schedule_later" value="schedule" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="schedule_later">Schedule for Later</label>
+                </div>
+
+                <div id="scheduled-at-group">
+                    <label for="scheduled-at" class="form-label">Schedule Date and Time*</label>
+                    <input type="datetime-local" class="form-control" id="scheduled-at" name="scheduled_at">
+                    <div class="form-text">Messages will be sent at this specific date and time.</div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-success btn-lg">Launch Campaign</button>
+        </div>
+    </form>
+</div>
+
+<!-- Link to Quill JS -->
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js"></script>
+<!-- Link to Quill Emoji JS -->
+<script src="https://cdn.jsdelivr.net/npm/quill-emoji@0.2.0/dist/quill-emoji.js"></script>
+<script>
+    // --- Global Quill State and Backend API Configuration ---
+    let quill = null;
+    let aiRange = null; // Stores the cursor position before opening the drafting block
+
+    // The API URL now points to our Django backend view
+    const API_URL = "{% url 'messaging:ai_draft_message' %}";
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // --- Utility Functions ---
+    const formNotification = document.getElementById('form-notification');
+    const aiDraftingBlock = document.getElementById('ai-drafting-block');
+
+    /**
+     * Shows a non-alert notification to the user in the form area.
+     * @param {string} message - The message to display.
+     * @param {string} type - 'success', 'danger', or 'warning'.
+     */
+    function showNotification(message, type = 'danger') {
+        formNotification.textContent = message;
+        formNotification.className = `alert alert-${type}`;
+        formNotification.classList.remove('d-none');
+        setTimeout(() => formNotification.classList.add('d-none'), 5000);
+    }
+
+    /**
+     * Sets the loading state of the AI drafting block button.
+     * @param {boolean} isLoading - True to show loading, false otherwise.
+     */
+    function setAiLoading(isLoading) {
+        const btn = document.getElementById('ai-generate-btn');
+        const text = document.getElementById('ai-btn-text');
+        const spinner = document.getElementById('ai-loading-spinner');
+
+        btn.disabled = isLoading;
+        if (isLoading) {
+            text.textContent = 'Generating...';
+            spinner.style.display = 'inline-block';
+        } else {
+            text.textContent = 'Generate & Insert';
+            spinner.style.display = 'none';
+        }
+    }
+
+    /**
+     * Closes the AI drafting block (Exposed globally).
+     */
+    window.closeAiDrafting = function() {
+        if (aiDraftingBlock) {
+            aiDraftingBlock.style.display = 'none';
+        }
+    }
+
+    /**
+     * Calls the Django backend to generate text based on the user prompt.
+     */
+    async function generateAiText(prompt, attempt = 0) {
+        const maxRetries = 3;
+        
+        if (!prompt) {
+            // Show error notification in the drafting block
+            const aiNotification = document.getElementById('ai-notification');
+            aiNotification.textContent = "Please enter a prompt for the AI.";
+            aiNotification.classList.remove('d-none');
+            return null;
+        }
+        document.getElementById('ai-notification').classList.add('d-none'); // Hide if successful
+        setAiLoading(true);
+
+        const payload = { prompt: prompt };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                const errorMessage = errorData?.message || `HTTP error! Status: ${response.status}`;
+
+                if (response.status === 429 && attempt < maxRetries) {
+                    const delay = Math.pow(2, attempt) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return generateAiText(prompt, attempt + 1);
+                }
+                throw new Error(errorMessage);
+            }
+
+            const result = await response.json();
+            const text = result.draft;
+
+            if (!text) {
+                throw new Error("AI returned an empty or malformed response.");
+            }
+            
+            return text;
+
+        } catch (error) {
+            console.error("AI Generation failed:", error);
+            showNotification(`AI Generation Failed: ${error.message}`, 'danger');
+            return null;
+        } finally {
+            setAiLoading(false);
+        }
+    }
+        
+    /**
+     * Function triggered by the AI drafting block button (Exposed globally).
+     */
+    window.triggerAiGeneration = async function() {
+        if (!quill) {
+            showNotification('Editor not ready. Please refresh the page.', 'danger');
+            return;
+        }
+        
+        const promptInput = document.getElementById('ai-prompt-input');
+        const prompt = promptInput.value.trim();
+        
+        if (!prompt) return; 
+
+        const generatedText = await generateAiText(prompt);
+
+        if (generatedText) {
+            closeAiDrafting();
+            
+            const insertIndex = aiRange ? aiRange.index : quill.getLength(); 
+            const isEditorEmpty = quill.getText().trim() === '';
+            const addSeparation = (insertIndex === quill.getLength()) && !isEditorEmpty;
+            const insertText = (addSeparation ? '\n\n' : '') + generatedText;
+            
+            quill.insertText(insertIndex, insertText);
+            quill.setSelection(insertIndex + insertText.length, 0); 
+            
+            showNotification("AI-generated content inserted successfully!", 'success');
+        }
+    }
+
+    // --- Attachment Handling Functions ---
+
+    let attachedFiles = [];
+
+    const attachmentSummary = document.getElementById('file-attachments-summary');
+    const attachedFilesList = document.getElementById('attached-files-list');
+
+    function updateAttachmentSummary() {
+        attachedFilesList.innerHTML = '';
+        let hasAttachments = false;
+
+        for (const file of attachedFiles) {
+            hasAttachments = true;
+            const listItem = document.createElement('li');
+            listItem.className = 'd-flex align-items-center mb-1';
+            listItem.innerHTML = `
+                <i data-lucide="file" class="w-4 h-4 mr-2 inline-block"></i>
+                <span class="text-truncate">${file.name}</span>
+                <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="removeAttachment('${file.name}')">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i>
+                </button>
+            `;
+            attachedFilesList.appendChild(listItem);
+        }
+
+        attachmentSummary.style.display = hasAttachments ? 'block' : 'none';
+        lucide.createIcons(); // Re-render icons after adding list items
+    }
+
+    window.handleFileChange = function(inputElement) {
+        const newFiles = Array.from(inputElement.files);
+        const existingFileNames = attachedFiles.map(f => f.name);
+        for (const file of newFiles) {
+            if (!existingFileNames.includes(file.name)) {
+                attachedFiles.push(file);
+            }
+        }
+        updateAttachmentSummary();
+    }
+
+    window.removeAttachment = function(fileName) {
+        attachedFiles = attachedFiles.filter(file => file.name !== fileName);
+        const dt = new DataTransfer();
+        for (const file of attachedFiles) {
+            dt.items.add(file);
+        }
+        document.getElementById('attachments').files = dt.files;
+        updateAttachmentSummary();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- 1. Quill Editor Setup with Custom Buttons ---
+        
+        function handleAiButtonClick() {
+            const draftingBlock = document.getElementById('ai-drafting-block');
+            const isVisible = draftingBlock.style.display === 'block';
+
+            if (isVisible) {
+                closeAiDrafting();
+            } else {
+                aiRange = quill.getSelection(true); 
+                document.getElementById('ai-prompt-input').value = '';
+                document.getElementById('ai-notification').classList.add('d-none');
+                draftingBlock.style.display = 'block';
+                document.getElementById('ai-prompt-input').focus();
+            }
+        }
+
+        // Attachment Handlers
+        function handleAttachment() { document.getElementById('attachments').click(); }
+        
+        const toolbarOptions = [
+            ['bold', 'italic', 'underline', 'strike'], 
+            ['emoji'],
+            ['clean'],
+            ['ai'],
+            // New custom attachment buttons
+            ['attachment'] 
+        ];
+
+        try {
+            // Correctly register the Quill Emoji module
+            Quill.register("modules/emoji", QuillEmoji);
+            
+            quill = new Quill('#message-editor', {
+                theme: 'snow',
+                placeholder: 'Write your message here, you can use bold, italics, and emojis! Attach media using the icons.',
+                modules: {
+                    toolbar: {
+                        container: toolbarOptions,
+                        handlers: {
+                            'ai': handleAiButtonClick,
+                            'attachment': handleAttachment,
+                        }
+                    },
+                    "emoji-toolbar": true,
+                    "emoji-shortname": true,
+                }
+            });
+            
+            quill.enable(true); 
+            quill.focus(); 
+
+            // Add Lucide icons to the custom buttons after Quill is initialized
+            document.querySelector('.ql-attachment').innerHTML = '<i data-lucide="paperclip"></i>';
+            lucide.createIcons(); // Initial creation of icons in the toolbar
+
+            // --- 2. Template Selector Logic ---
+            const templatesData = {
+                {% for template in templates %}'{{ template.id }}': `{{ template.content|escapejs }}`,{% endfor %}
+            };
+            const templateSelector = document.getElementById('template-selector');
+            
+            templateSelector.addEventListener('change', function() {
+                const templateId = this.value;
+                const content = templatesData[templateId] || '';
+                
+                quill.setContents([]);
+                
+                if (content) {
+                    quill.setText(content); 
+                } 
+                quill.focus();
+            });
+
+            // --- 3. Recipient Source Show/Hide and Validation Logic ---
+            const sourceRadios = document.querySelectorAll('input[name="recipient_source"]');
+            const sourceDivs = {
+                manual: document.getElementById('manual_input_div'),
+                csv: document.getElementById('csv_input_div'),
+                contacts: document.getElementById('contacts_input_div'),
+            };
+            const manualTextarea = sourceDivs.manual.querySelector('textarea[name="manual_numbers"]');
+            const csvFile = sourceDivs.csv.querySelector('input[name="csv_file"]');
+
+            function updateRecipientSource() {
+                Object.values(sourceDivs).forEach(div => div.classList.remove('active'));
+                
+                const selectedSource = document.querySelector('input[name="recipient_source"]:checked').value;
+                sourceDivs[selectedSource].classList.add('active');
+
+                manualTextarea.required = (selectedSource === 'manual');
+                csvFile.required = (selectedSource === 'csv');
+                
+                if (selectedSource !== 'manual') manualTextarea.value = '';
+                if (selectedSource !== 'csv') csvFile.value = '';
+            }
+
+            sourceRadios.forEach(radio => radio.addEventListener('change', updateRecipientSource));
+            updateRecipientSource();
+
+            // --- 4. Scheduling Logic ---
+            const sendOptionRadios = document.querySelectorAll('input[name="send_option"]');
+            const scheduledAtGroup = document.getElementById('scheduled-at-group');
+            const scheduledAtInput = document.getElementById('scheduled-at');
+
+            function updateScheduling() {
+                const selectedOption = document.querySelector('input[name="send_option"]:checked').value;
+                if (selectedOption === 'schedule') {
+                    scheduledAtGroup.classList.add('active');
+                    scheduledAtInput.required = true;
+                    
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() + 5); 
+                    scheduledAtInput.value = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                } else {
+                    scheduledAtGroup.classList.remove('active');
+                    scheduledAtInput.required = false;
+                    scheduledAtInput.value = '';
+                }
+            }
+
+            sendOptionRadios.forEach(radio => radio.addEventListener('change', updateScheduling));
+            updateScheduling();
+
+            // --- 5. Form Submission ---
+            const campaignForm = document.getElementById('campaign-form');
+            const hiddenInput = document.getElementById('message-content-hidden');
+            const richInput = document.getElementById('rich-content-hidden');
+
+
+            campaignForm.addEventListener('submit', function(e) {
+                // Capture the plain text for the messaging service
+                const plainTextContent = quill.root.innerText.trim();
+                hiddenInput.value = plainTextContent;
+
+                // Capture the full rich content (Delta/HTML) for rich messaging clients
+                richInput.value = JSON.stringify(quill.getContents()); 
+
+                if (plainTextContent === '' && attachedFiles.length === 0) {
+                    showNotification('Validation Error: Please enter a message or attach a file.', 'danger');
+                    e.preventDefault();
+                    return;
+                }
+                
+                const selectedSource = document.querySelector('input[name="recipient_source"]:checked').value;
+                let isValid = true;
+
+                if (selectedSource === 'contacts') {
+                    const contactCheckboxes = document.querySelectorAll('.contact-checkbox');
+                    if (Array.from(contactCheckboxes).filter(c => c.checked).length === 0) {
+                        showNotification('Validation Error: Please select at least one contact.', 'danger');
+                        isValid = false;
+                    }
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+
+        } catch (error) {
+            console.error('Quill Editor failed to initialize:', error);
+            const editorDiv = document.getElementById('message-editor');
+            if (editorDiv) {
+                editorDiv.innerHTML = '<textarea name="message_content_fallback" class="form-control" style="min-height: 250px; border-color: red;" placeholder="ERROR: Editor failed to load."></textarea>';
+                showNotification('ERROR: The advanced editor failed to load. Please use the basic text area.', 'danger');
+            }
+        }
+    });
+</script>
+{% endblock %}
