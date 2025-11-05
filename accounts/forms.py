@@ -1,9 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import Contact,CustomUser
+from .models import Contact, CustomUser
 import re
 
-# basic E.164-ish check (allow optional +)
 PHONE_RE = re.compile(r'^\+?\d{7,15}$')
 
 def normalize_phone(phone: str) -> str:
@@ -11,11 +10,16 @@ def normalize_phone(phone: str) -> str:
     cleaned = re.sub(r'[^\d+]', '', phone)
     return cleaned
 
+
 class CustomUserCreationForm(UserCreationForm):
-    class Meta(UserCreationForm.Meta):
+    class Meta:
         model = CustomUser
-        
-        fields = UserCreationForm.Meta.fields + ('user_type', 'image',)
+        fields = ['username', 'email', 'password1', 'password2', 'user_type', 'image']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].required = True
+        self.fields['user_type'].required = True
 
 
 class ContactForm(forms.ModelForm):
@@ -29,17 +33,22 @@ class ContactForm(forms.ModelForm):
 
     def clean_phone(self):
         phone = normalize_phone(self.cleaned_data.get('phone', ''))
-        if not phone: raise forms.ValidationError("Phone number is required.")
-        if not PHONE_RE.match(phone): raise forms.ValidationError("Enter a valid phone number.")
+        if not phone:
+            raise forms.ValidationError("Phone number is required.")
+        if not PHONE_RE.match(phone):
+            raise forms.ValidationError("Enter a valid phone number.")
         if self.user:
             qs = Contact.objects.filter(user=self.user, phone=phone)
-            if self.instance and self.instance.pk: qs = qs.exclude(pk=self.instance.pk)
-            if qs.exists(): raise forms.ValidationError(f"A contact with phone number {phone} already exists.")
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError(f"A contact with phone number {phone} already exists.")
         return phone
 
 
 class UserProfileUpdateForm(forms.ModelForm):
     password = forms.CharField(label='Password', required=False, widget=forms.PasswordInput)
+
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'image']
@@ -47,7 +56,8 @@ class UserProfileUpdateForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         pwd = self.cleaned_data.get('password')
-        if pwd: user.set_password(pwd)
-        if commit: user.save()
+        if pwd:
+            user.set_password(pwd)
+        if commit:
+            user.save()
         return user
-    
