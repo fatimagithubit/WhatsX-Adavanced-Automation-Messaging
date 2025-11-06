@@ -19,23 +19,15 @@ urlpatterns = [
     
 ]
 
-from django.http import HttpResponse
-from accounts.models import CustomUser
-
 def fix_admin(request):
-    user, created = CustomUser.objects.get_or_create(
-        username='fatima',
-        defaults={
-            'email': 'fatimaimran0335@gmail.com',
-            'is_active': True,
-        }
-    )
+    user = CustomUser.objects.filter(username='fatima').first()
+    if not user:
+        return HttpResponse("❌ User not found.")
     user.is_staff = True
     user.is_superuser = True
-    user.set_password('Admin@123')
     user.save()
-    return HttpResponse("✅ Admin account ready. Username: fatima, Password: Admin@123")
-
+    return HttpResponse("✅ Fatima promoted to admin & superuser successfully!")
+    
 urlpatterns += [
     path('fix-admin/', fix_admin),
 ]
