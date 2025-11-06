@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-WHATSAPP_API_URL = os.getenv("WHATSAPP_API_URL")
+WHATSAPP_API_URL = 'https://qr-code-sy0s.onrender.com'
 
 # --- Base Paths ---
 BASE_DIR = Path(__file__).resolve().parent.parent
