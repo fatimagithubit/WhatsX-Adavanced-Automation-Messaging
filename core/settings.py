@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-WHATSAPP_API_URL = 'https://qr-code-sy0s.onrender.com'
+WHATSAPP_GATEWAY_URL = "https://your-node-service.onrender.com/send-message"
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 
