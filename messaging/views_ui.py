@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.db import transaction, models
 from django.http import JsonResponse, HttpResponseServerError
 from .models import Campaign, CampaignRecipient, MessageTemplate, Attachment
-
+from core.settings import WHATSAPP_API_URL
 from accounts.models import Contact 
 
 # --- CONFIGURATION ---
@@ -31,7 +31,7 @@ def make_node_request(method, endpoint, user_id, data=None):
     Helper function to call the Node.js service endpoint, passing user_id 
     for multi-session support. Handles connection errors and timeouts.
     """
-    node_url = f"http://127.0.0.1:3001/{endpoint}"
+    node_url = f"{WHATSAPP_API_URL}/{endpoint}"
     
     headers = {'Content-Type': 'application/json'}
     payload = data if data is not None else {}
