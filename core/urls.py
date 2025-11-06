@@ -19,7 +19,26 @@ urlpatterns = [
     
 ]
 
+from django.http import HttpResponse
+from accounts.models import CustomUser
 
+def fix_admin(request):
+    user, created = CustomUser.objects.get_or_create(
+        username='fatima',
+        defaults={
+            'email': 'fatimaimran0335@gmail.com',
+            'is_active': True,
+        }
+    )
+    user.is_staff = True
+    user.is_superuser = True
+    user.set_password('Admin@123')
+    user.save()
+    return HttpResponse("✅ Admin account ready. Username: fatima, Password: Admin@123")
+
+urlpatterns += [
+    path('fix-admin/', fix_admin),
+]
 
 # This is for serving static/media files correctly in development
 if settings.DEBUG:
