@@ -8,6 +8,8 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 WHATSAPP_API_URL = 'https://qr-code-sy0s.onrender.com'
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
 
 # --- Base Paths ---
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -118,15 +120,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# --- Celery Settings ---
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE MUST be UTC, as all times are internally stored as UTC.
-CELERY_TIMEZONE = 'UTC' 
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
 
 # --- Localization (Timezone Fix Applied Here) ---
 LANGUAGE_CODE = 'en-us'
