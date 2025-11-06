@@ -7,14 +7,14 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-WHATSAPP_API_URL = 'http://127.0.0.1:3001' 
+WHATSAPP_API_URL = os.getenv("WHATSAPP_API_URL")
 
 # --- Base Paths ---
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .env file
-dotenv_path = BASE_DIR / '.env'
-load_dotenv(dotenv_path=dotenv_path)
+# # Load .env file
+# dotenv_path = BASE_DIR / '.env'
+# load_dotenv(dotenv_path=dotenv_path)
 
 
 # --- Security Settings ---
