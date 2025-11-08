@@ -6,7 +6,8 @@ from django.utils import timezone
 from django.db import transaction, models
 from django.http import JsonResponse, HttpResponseServerError
 from .models import Campaign, CampaignRecipient, MessageTemplate, Attachment
-from core.settings import WHATSAPP_API_URL
+from core.settings import WHATSAPP_NODE_URL
+
 from accounts.models import Contact 
 
 # ========== CONFIG ==========
@@ -28,7 +29,7 @@ def whatsapp_connect_view(request):
 
 def make_node_request(method, endpoint, user_id, data=None):
     """Helper to communicate with Node.js service."""
-    node_url = f"{WHATSAPP_API_URL}/{endpoint}"
+    node_url = f"{WHATSAPP_NODE_URL}/{endpoint}"
     headers = {'Content-Type': 'application/json'}
     payload = data or {}
 
