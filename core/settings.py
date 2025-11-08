@@ -7,9 +7,8 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-WHATSAPP_GATEWAY_URL = "https://your-node-service.onrender.com/send-message"
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
+WHATSAPP_API_URL = "https://your-node-service.onrender.com/send-message"
+
 
 # --- Base Paths ---
 BASE_DIR = Path(__file__).resolve().parent.parent
