@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-WHATSAPP_API_URL = "https://your-node-service.onrender.com/send-message"
+WHATSAPP_API_URL = "https://your-node-service.onrender.com"
 
 
 # --- Base Paths ---
