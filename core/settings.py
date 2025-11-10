@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-WHATSAPP_NODE_URL = "https://qr-code-sy0s.onrender.com"
+WHATSAPP_NODE_URL = os.environ.get("WHATSAPP_NODE_URL", "https://qr-code-sy0s.onrender.com")
 
 
 
